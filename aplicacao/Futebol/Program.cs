@@ -7,11 +7,14 @@ namespace Futebol
     {
         static void Main(string[] args)
         {
+
+            string[] opcoes = { "1- Criar novo campeonato", "2- Entrar em um campeonato em andamento", "3- Listar campeonatos finalizados" };
+
             while (true)
             {
                 var conn = new Banco();
                 SqlConnection conexaoSql = new SqlConnection(conn.Conexao);
-                switch (Menu())
+                switch (Menu(opcoes))
                 {
                     case 1:
                         CriarCampeonato(conexaoSql);
@@ -37,29 +40,23 @@ namespace Futebol
         }
 
 
-        private static int Menu()
+        private static int Menu(string[] opcoes)
         {
             Console.Clear();
             Console.WriteLine($"---|Campeonato de Futebol|---");
 
-            Console.WriteLine("1- Criar novo campeonato");
-            Console.WriteLine("2- Entrar em um campeonato em andamento");
-            Console.WriteLine("3- Listar campeonatos finalizados");
+            foreach (var i in opcoes)
+                Console.WriteLine(i);
             Console.WriteLine("0- Voltar");
             Console.Write("R: ");
 
             if (int.TryParse(Console.ReadLine(), out int option))
-            {
-                Console.WriteLine($"Opcao: {option}");
                 return option;
-            }
-            else
-            {
-                Console.WriteLine("Voce deve digitar um numero!");
-                Console.Write("Pressione qualquer tecla para continuar...");
-                Console.ReadKey();
-                return Menu();
-            }
+
+            Console.WriteLine("Voce deve digitar um numero!");
+            Console.Write("Pressione qualquer tecla para continuar...");
+            Console.ReadKey();
+            return Menu(opcoes);
         }
 
 
@@ -70,48 +67,46 @@ namespace Futebol
 
             string nome = LerString("Digite o nome do campeonato: ");
             string temporada = LerString("Digite a temporada do campeonato: ");
-            int totalCampeonatos = 0;
 
             try
             {
                 conexaoSql.Open();
-                using (var cmd = new SqlCommand("SELECT COUNT(*) FROM Campeonato WHERE nome = @nome AND temporada = @temporada", conexaoSql))
-                {
-                    cmd.Parameters.AddWithValue("@nome", SqlDbType.VarChar).Value = nome;
-                    cmd.Parameters.AddWithValue("@temporada", SqlDbType.VarChar).Value = temporada;
 
-                    totalCampeonatos = (int)cmd.ExecuteScalar();
-                }
+                var cmd = new SqlCommand("InserirCampeonato", conexaoSql);
 
-                if (totalCampeonatos == 0)
-                {
-                    using var cmd = new SqlCommand("INSERT INTO Campeonato VALUES (@nome, @temporada, @status);", conexaoSql);
+                cmd.CommandType = CommandType.StoredProcedure;
 
-                    cmd.Parameters.AddWithValue("@nome", nome);
-                    cmd.Parameters.AddWithValue("@temporada", temporada);
-                    cmd.Parameters.AddWithValue("@status", "Iniciado");
+                cmd.Parameters.Add(new SqlParameter("@nome", SqlDbType.VarChar, 30)).Value = nome;
+                cmd.Parameters.Add(new SqlParameter("@temporada", SqlDbType.VarChar, 10)).Value = temporada;
+                cmd.Parameters.Add(new SqlParameter("@status", SqlDbType.VarChar, 30)).Value = StatusCampeonato.Iniciado.ToString();
 
-                    cmd.ExecuteNonQuery();
-                }
+                // adicionando uma variavel que vai ser o retorno da procedure
+                var retorno = new SqlParameter("@resultado", SqlDbType.Int);
+                retorno.Direction = ParameterDirection.Output;
+                cmd.Parameters.Add(retorno);
+
+                cmd.ExecuteNonQuery();
+
+                int resultadoProc = (int)retorno.Value;
+
+                if (resultadoProc == 0)
+                    Console.WriteLine("Ja existe um campeonato com esse nome!");
+                else
+                    new Campeonato(nome, temporada, conexaoSql).Executar();
             }
-            catch (SqlException ex)
+            catch (SqlException e)
             {
-                Console.WriteLine($"Erro SQL: {ex.Message}");
+                Console.WriteLine($"Erro SQL: {e.Message}");
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                Console.WriteLine($"Erro: {ex.Message}");
+                Console.WriteLine($"Erro: {e.Message}");
             }
             finally
             {
                 if (conexaoSql.State == ConnectionState.Open)
                     conexaoSql.Close();
             }
-
-            if (totalCampeonatos != 0)
-                Console.WriteLine("Ja existe um campeonato com esse mesmo nome e temporada!");
-            else
-                new Campeonato(nome, temporada, conexaoSql).Executar();
         }
 
 
@@ -173,9 +168,7 @@ namespace Futebol
                 if (c == null)
                     Console.WriteLine("Nome invalido!");
                 else
-                {
                     c.Executar();
-                }
             }
             else
             {

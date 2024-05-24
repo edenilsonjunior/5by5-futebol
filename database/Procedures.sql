@@ -100,3 +100,24 @@ CREATE OR ALTER PROC InserirJogo
         INSERT INTO Jogo
         VALUES (@nome_camp, @temp_camp, @time_casa, @time_visitante, @gols_time_casa, @gols_time_visitante);
 END;
+
+
+
+GO
+CREATE OR ALTER PROC InserirCampeonato
+    @nome VARCHAR(30), 
+    @temporada VARCHAR(10), 
+    @status VARCHAR(30),
+    @resultado INT OUTPUT
+    AS
+    BEGIN
+        IF NOT EXISTS (SELECT * FROM Campeonato WHERE nome = @nome AND temporada = @temporada)
+        BEGIN
+            INSERT INTO Campeonato VALUES (@nome, @temporada, @status);
+            SET @resultado = 1;
+        END;
+        ELSE
+            SET @resultado = 0;
+
+    return @resultado;
+END;
