@@ -1,7 +1,40 @@
 USE DBFutebol;
 
+-- Procedure que vai inserir uma equipe ao contexto geral
 GO
-CREATE OR ALTER PROC InserirEstatistica
+CREATE OR ALTER PROC InserirEquipe
+
+    @nome VARCHAR(30),
+    @apelido VARCHAR(30),
+    @data_criacao_str VARCHAR(10)
+    AS
+    BEGIN
+
+        DECLARE @data_criacao DATE = CONVERT(DATE, @data_criacao_str, 103);
+
+        INSERT INTO Equipe
+        VALUES (@nome, @apelido, @data_criacao);
+END;
+
+-- Procedure que vai criar uma estatistica para determinado time, em determinado campeonato
+GO
+CREATE OR ALTER PROC AdicionarTimeAoCampeonato
+    @nome_camp VARCHAR(30), 
+    @temp_camp VARCHAR(10), 
+    @nome_equipe VARCHAR(30)
+    AS
+    BEGIN
+
+        IF NOT EXISTS (SELECT * FROM Estatistica WHERE nome_camp = @nome_camp AND temp_camp = @temp_camp AND nome_equipe = @nome_equipe)
+        BEGIN
+            INSERT INTO Estatistica VALUES
+            (@nome_camp, @temp_camp, @nome_equipe, 0, 0, 0);
+        END;
+END;
+
+-- Procedure que vai atualizar uma estatistica para determinado time, em determinado campeonato
+GO
+CREATE OR ALTER PROC AtualizarEstatistica
     @nome_camp VARCHAR(30), 
     @temp_camp VARCHAR(10), 
     @nome_equipe VARCHAR(30),
@@ -26,7 +59,7 @@ CREATE OR ALTER PROC InserirEstatistica
         END;
 END;
 
-
+-- Procedure que vai inserir um jogo de terminados times, em um campeonato, manipulando tambem a tabela Estatistica
 GO
 CREATE OR ALTER PROC InserirJogo
     @nome_camp VARCHAR(30), 
@@ -58,28 +91,12 @@ CREATE OR ALTER PROC InserirJogo
         END;
 
         -- Inserindo as estatisticas do time da casa        
-        EXEC InserirEstatistica @nome_camp, @temp_camp, @time_casa, @pontos_time_casa, @gols_time_casa, @gols_time_visitante;
+        EXEC AtualizarEstatistica @nome_camp, @temp_camp, @time_casa, @pontos_time_casa, @gols_time_casa, @gols_time_visitante;
 
         -- Inserindo as estatisticas do time visitante        
-        EXEC InserirEstatistica @nome_camp, @temp_camp, @time_visitante, @pontos_time_visitante, @gols_time_visitante, @gols_time_casa;
+        EXEC AtualizarEstatistica @nome_camp, @temp_camp, @time_visitante, @pontos_time_visitante, @gols_time_visitante, @gols_time_casa;
 
         -- Inserindo o jogo atual em sua respectiva tabela
         INSERT INTO Jogo
         VALUES (@nome_camp, @temp_camp, @time_casa, @time_visitante, @gols_time_casa, @gols_time_visitante);
-END;
-
-
-GO
-CREATE OR ALTER PROC InserirEquipe
-
-    @nome VARCHAR(30),
-    @apelido VARCHAR(30),
-    @data_criacao_str VARCHAR(10)
-    AS
-    BEGIN
-
-        DECLARE @data_criacao DATE = CONVERT(DATE, @data_criacao_str, 103);
-
-        INSERT INTO Equipe
-        VALUES (@nome, @apelido, @data_criacao);
 END;
