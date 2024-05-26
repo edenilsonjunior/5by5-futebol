@@ -1,23 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Futebol
+﻿namespace Futebol
 {
 
     internal class Jogo
     {
-        private string _campeonato;
-        private string _temporada;
-        private Equipe _timeCasa;
-        private Equipe _timeVisitante;
+        private readonly string _campeonato;
+        private readonly string _temporada;
+        private readonly Equipe _timeCasa;
+        private readonly Equipe _timeVisitante;
         private int _golsTimeCasa;
         private int _golsTimeVisitante;
 
         public string Campeonato => _campeonato;
-        public string Temporada => _campeonato;
+        public string Temporada => _temporada;
         public Equipe TimeCasa => _timeCasa;
         public Equipe TimeVisitante => _timeVisitante;
         public int GolsTimeCasa => _golsTimeCasa;
