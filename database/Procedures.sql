@@ -12,8 +12,11 @@ CREATE OR ALTER PROC InserirEquipe
 
         DECLARE @data_criacao DATE = CONVERT(DATE, @data_criacao_str, 103);
 
-        INSERT INTO Equipe
-        VALUES (@nome, @apelido, @data_criacao);
+        IF NOT EXISTS (SELECT * FROM Equipe WHERE nome = @nome)
+        BEGIN
+            INSERT INTO Equipe
+            VALUES (@nome, @apelido, @data_criacao);
+        END;
 END;
 
 -- Procedure que vai criar uma estatistica para determinado time, em determinado campeonato
@@ -97,6 +100,60 @@ CREATE OR ALTER PROC InserirJogo
         EXEC AtualizarEstatistica @nome_camp, @temp_camp, @time_visitante, @pontos_time_visitante, @gols_time_visitante, @gols_time_casa;
 
         -- Inserindo o jogo atual em sua respectiva tabela
-        INSERT INTO Jogo
-        VALUES (@nome_camp, @temp_camp, @time_casa, @time_visitante, @gols_time_casa, @gols_time_visitante);
+        IF NOT EXISTS (SELECT * FROM Jogo WHERE nome_camp = @nome_camp AND temp_camp = @temp_camp AND time_casa = @time_casa AND time_visitante = @time_visitante)
+        BEGIN
+            INSERT INTO Jogo
+            VALUES (@nome_camp, @temp_camp, @time_casa, @time_visitante, @gols_time_casa, @gols_time_visitante);
+        END;
+END;
+
+GO
+CREATE OR ALTER PROC InserirCampeonato
+    @nome VARCHAR(30), 
+    @temporada VARCHAR(10), 
+    @status VARCHAR(30),
+    @resultado INT OUTPUT
+    AS
+    BEGIN
+        IF NOT EXISTS (SELECT * FROM Campeonato WHERE nome = @nome AND temporada = @temporada)
+        BEGIN
+            INSERT INTO Campeonato VALUES (@nome, @temporada, @status);
+            SET @resultado = 1;
+        END;
+        ELSE
+            SET @resultado = 0;
+END;
+
+GO
+CREATE OR ALTER PROC AtualizarCampeonato
+    @nome VARCHAR(30), 
+    @temporada VARCHAR(10), 
+    @status VARCHAR(30)
+    AS
+    BEGIN
+
+        IF NOT EXISTS (SELECT * FROM Campeonato WHERE nome = @nome AND temporada = @temporada)
+        BEGIN
+            INSERT INTO Campeonato VALUES (@nome, @temporada, @status);
+        END;
+        ELSE
+        BEGIN
+            UPDATE Campeonato
+            SET status = @status
+            WHERE nome = @nome AND temporada = @temporada;
+        END;
+
+END;
+
+
+GO
+CREATE OR ALTER PROC RecuperarEquipesPorCampeonato
+    @nome_camp VARCHAR(30),
+    @temp_camp VARCHAR(10)
+    AS
+    BEGIN
+    SELECT e.*
+    FROM Equipe e
+    INNER JOIN Estatistica es ON e.nome = es.nome_equipe
+    WHERE es.nome_camp = @nome_camp AND es.temp_camp = @temp_camp;
 END;
