@@ -6,23 +6,9 @@
         private string _apelido;
         private DateOnly _dataCriacao;
 
-        public string Nome
-        {
-            get => _nome;
-            set { _nome = value; }
-        }
-
-        public string Apelido
-        {
-            get => _apelido;
-            set { _apelido = value; }
-        }
-
-        public DateOnly DataCriacao
-        {
-            get => _dataCriacao;
-            set { _dataCriacao = value; }
-        }
+        public string Nome => _nome;
+        public string Apelido => _apelido;
+        public DateOnly DataCriacao => _dataCriacao;
 
         public Equipe(string nome, string apelido, DateOnly dataCriacao)
         {
@@ -31,5 +17,15 @@
             _dataCriacao = dataCriacao;
         }
 
+        public override string? ToString()
+        {
+            string str = "";
+
+            str += $"Nome...........: {Nome}\n";
+            str += $"Apelido........: {Apelido}\n";
+            str += $"Data de Criacao: {DataCriacao}";
+
+            return str;
+        }
     }
 }

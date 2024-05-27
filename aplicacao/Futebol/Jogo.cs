@@ -27,6 +27,12 @@
             _golsTimeVisitante = 0;
         }
 
+        public Jogo(string campeonato, string temporada, Equipe timeCasa, Equipe timeVisitante, int golsTimeCasa, int golsTimeVisitante) : this(campeonato, temporada, timeCasa, timeVisitante)
+        {
+            _golsTimeCasa = golsTimeCasa;
+            _golsTimeVisitante = golsTimeVisitante;
+        }
+
         public void Jogar()
         {
             var random = new Random();
@@ -39,5 +45,26 @@
             _golsTimeCasa = golsTimeCasa;
             _golsTimeVisitante = golsTimeVisitante;
         }
+
+
+        public string MostrarJogo(bool ExibeCampeonato)
+        {
+            string str = "";
+
+            str += $"Jogo..................: {TimeCasa.Nome} x {TimeVisitante.Nome}\n";
+
+            if (ExibeCampeonato)
+            {
+                str += $"Campeonato............: {Campeonato}\n";
+                str += $"Temporada.............: {Temporada}\n";
+            }
+            str += $"Time da casa..........: {TimeCasa.Nome}\n";
+            str += $"Time visitante........: {TimeVisitante.Nome}\n";
+            str += $"Gols do time da casa..: {GolsTimeCasa}\n";
+            str += $"Gols do time visitante: {GolsTimeVisitante}\n";
+
+            return str;
+        }
+
     }
 }

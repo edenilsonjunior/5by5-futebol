@@ -1,9 +1,7 @@
 USE DBFutebol;
 
 INSERT INTO Campeonato(nome, temporada) VALUES 
-('Brasileirao', '2024/1'),
-('Brasileirao', '2024/2');
-
+('Brasileirao', '2024/1');
 
 exec InserirEquipe 'Leões do Sul', 'Leões', '15/03/1998';
 exec InserirEquipe 'Águias Aladas', 'Águias', '05/09/2005';
@@ -16,14 +14,7 @@ exec InserirEquipe 'Corvos Noturnos', 'Corvos', '03/02/1979';
 exec InserirEquipe 'Centauros da Cidade', 'Centauros', '21/08/2007';
 exec InserirEquipe 'Serpentes Venenosas', 'Serpentes', '17/11/1992';
 
-
-exec InserirJogo 'Brasileirao', '2024/1', 'Leões do Sul', 'Águias Aladas', 3, 2;
-exec InserirJogo 'Brasileirao', '2024/1', 'Serpentes Venenosas', 'Corvos Noturnos', 10, 2;
-exec InserirJogo 'Brasileirao', '2024/1', 'Serpentes Venenosas', 'Águias Aladas', 3, 5;
-
-
-exec InserirJogo 'Brasileirao', '2024/2', 'Serpentes Venenosas', 'Corvos Noturnos', 10, 2;
-
-
-select * from Estatistica WHERE temp_camp = '2024/1' order by pontos DESC, gols_marcados DESC;
-select * from Estatistica WHERE temp_camp = '2024/2' order by pontos DESC, gols_marcados DESC;
+select * from Campeonato;
+SELECT * FROM Equipe;
+select * from Jogo;
+select * from Estatistica;

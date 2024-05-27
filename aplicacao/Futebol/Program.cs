@@ -1,4 +1,6 @@
-﻿namespace Futebol
+﻿using Futebol.Campeonato;
+
+namespace Futebol
 {
     internal class Program
     {
