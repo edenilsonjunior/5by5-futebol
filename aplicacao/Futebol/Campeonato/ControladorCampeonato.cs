@@ -5,14 +5,7 @@ namespace Futebol.Campeonato
 {
     internal class ControladorCampeonato
     {
-        private readonly string _iniciado;
-        private readonly string _finalizado;
-
-        public ControladorCampeonato()
-        {
-            _iniciado = StatusCampeonato.Iniciado.ToString();
-            _finalizado = StatusCampeonato.Acontecendo.ToString();
-        }
+        public ControladorCampeonato() { }
 
         public void Executar()
         {
@@ -41,12 +34,10 @@ namespace Futebol.Campeonato
                         Console.WriteLine("Opcao invalida!");
                         break;
                 }
-
                 Console.Write("Pressione qualquer tecla para voltar ao menu...");
                 Console.ReadKey();
             }
         }
-
 
         private void CriarCampeonato()
         {
@@ -58,35 +49,27 @@ namespace Futebol.Campeonato
 
             int insercao = InserirCampeonato(nome, temporada);
 
-            switch (insercao)
+            if (insercao == 1)
             {
-                case 1:
+                Console.WriteLine("Campeonato cadastrado!");
+                Console.WriteLine("Pressione qualquer tecla para ir até o campeonato criado...");
+                Console.ReadKey();
 
-                    Console.WriteLine("Campeonato cadastrado!");
-                    Console.WriteLine("Pressione qualquer tecla para ir até o campeonato criado...");
-                    Console.ReadKey();
+                var c = new Campeonato(nome, temporada)
+                {
+                    Jogos = CarregarJogos(nome, temporada),
+                    Equipes = CadastrarEquipes(nome, temporada),
+                };
+                c.Executar();
 
-                    var c = new Campeonato(nome, temporada)
-                    {
-                        Jogos = CarregarJogos(nome, temporada),
-                        Equipes = CadastrarEquipes(nome, temporada),
-                    };
-
-                    c.Executar();
-
-                    SalvarDadosEquipes(c.Equipes, c.Nome, c.Temporada);
-                    SalvarJogos(c.Jogos, c.Nome, c.Temporada);
-                    SalvarStatusCampeonato(c);
-
-                    break;
-                case 0:
-                    Console.WriteLine("Ja existe um campeonato com esse nome!");
-                    break;
-                default:
-                    Console.WriteLine("Houve um erro ao inserir o campeonato!");
-                    break;
+                SalvarDadosEquipes(c.Equipes, c.Nome, c.Temporada);
+                SalvarJogos(c.Jogos, c.Nome, c.Temporada);
+                SalvarStatusCampeonato(c);
             }
-
+            else if (insercao == 0)
+                Console.WriteLine("Ja existe um campeonato com esse nome!");
+            else
+                Console.WriteLine("Houve um erro ao inserir o campeonato!");
         }
 
         private void VoltarParaCampeonato()
@@ -97,8 +80,7 @@ namespace Futebol.Campeonato
             var listaCampeonatos = new List<Campeonato>();
 
 
-            Console.Clear();
-            try
+            LidarComException(() =>
             {
                 using var conexao = new SqlConnection(new Banco().Conexao);
                 using var cmd = new SqlCommand("SELECT * FROM Campeonato", conexao);
@@ -115,15 +97,8 @@ namespace Futebol.Campeonato
                     Console.WriteLine(c.ToString());
                 }
                 conexao.Close();
-            }
-            catch (SqlException ex)
-            {
-                Console.WriteLine($"Erro SQL: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro: {ex.Message}");
-            }
+            });
+
 
             if (total != 0)
             {
@@ -153,20 +128,17 @@ namespace Futebol.Campeonato
         }
 
 
-
-
-
         // Metodos de cadastro e insercao de equipes no campeonato e banco de dados 
         private List<Equipe> CadastrarEquipes(string nomeCamp, string tempCamp)
         {
             var lista = CarregarEquipesParticipando(nomeCamp, tempCamp);
             var equipesJaCadastradas = CarregarEquipesCadastradas();
-
+            int total;
 
             Console.Clear();
             Console.WriteLine("---|Inserir equipes|---");
 
-            int total;
+
             if (lista.Count == 0)
             {
                 total = Utils.LerInt("Digite o numero de times competindo (3-5):");
@@ -176,11 +148,9 @@ namespace Futebol.Campeonato
                     Console.WriteLine("Resposta invalida! Digite novamente: ");
                     total = Utils.LerInt("Digite o numero de times competindo (3-5):");
                 }
-
             }
             else
             {
-
                 Console.WriteLine("Total de equipes ja cadastradas no campeonato: " + lista.Count);
                 Console.WriteLine("Faltam " + (3 - lista.Count) + "equipe(s) para atingir o minimo");
 
@@ -196,45 +166,40 @@ namespace Futebol.Campeonato
             }
 
 
-
-            Equipe? e;
             while (lista.Count < total)
             {
-
                 Console.WriteLine("Total de equipes no campeonato: " + lista.Count);
                 Console.WriteLine("Opcoes:");
-                int escolha = Utils.LerInt("1- Inserir uma nova equipe\n2- Inserir uma equipe ja cadastrada");
+                int op = Utils.LerInt("1- Inserir uma nova equipe\n2- Inserir uma equipe ja cadastrada");
 
-                switch (escolha)
+                if (op == 1)
                 {
-                    case 1:
-                        e = CadastrarNovaEquipe(equipesJaCadastradas);
-                        Console.Clear();
-                        if (e != null)
-                        {
-                            lista.Add(e);
-                            Console.WriteLine("*** Equipe adicionada com sucesso! ***");
-                        }
-                        break;
-                    case 2:
-                        e = CadastrarEquipeJaExistente(equipesJaCadastradas, lista);
-                        Console.Clear();
-                        if (e != null)
-                        {
-                            lista.Add(e);
-                            Console.WriteLine("*** Equipe adicionada com sucesso! ***");
-                        }
-                        break;
-                    default:
-                        Console.WriteLine("Resposta invalida!");
-                        break;
+                    var e1 = CadastrarNovaEquipe(equipesJaCadastradas);
+                    Console.Clear();
+                    if (e1 != null)
+                    {
+                        lista.Add(e1);
+                        Console.WriteLine("*** Equipe adicionada com sucesso! ***");
+                    }
                 }
+                else if (op == 2)
+                {
+                    var e2 = CadastrarEquipeJaExistente(equipesJaCadastradas, lista);
+                    Console.Clear();
+                    if (e2 != null)
+                    {
+                        lista.Add(e2);
+                        Console.WriteLine("*** Equipe adicionada com sucesso! ***");
+                    }
+                }
+                else
+                    Console.WriteLine("Resposta invalida!");
             }
 
             return lista;
         }
 
-        private Equipe? CadastrarNovaEquipe(List<Equipe> equipesJaCadastradas)
+        private static Equipe? CadastrarNovaEquipe(List<Equipe> equipesJaCadastradas)
         {
 
             string nome = Utils.LerString("Digite o nome da equipe: ");
@@ -252,7 +217,7 @@ namespace Futebol.Campeonato
             return null;
         }
 
-        private Equipe? CadastrarEquipeJaExistente(List<Equipe> equipesJaCadastradas, List<Equipe> participando)
+        private static Equipe? CadastrarEquipeJaExistente(List<Equipe> equipesJaCadastradas, List<Equipe> participando)
         {
 
             Console.Clear();
@@ -284,7 +249,7 @@ namespace Futebol.Campeonato
 
 
 
-            Equipe equipeEscolhida = equipesJaCadastradas[escolhida-1];
+            Equipe equipeEscolhida = equipesJaCadastradas[escolhida - 1];
 
             if (participando.Find(e => e.Nome.Equals(equipeEscolhida.Nome)) == null)
                 return equipeEscolhida;
@@ -295,52 +260,34 @@ namespace Futebol.Campeonato
 
 
 
-
-
-
         // Metodos que inserem informacoes no banco de dados
         private int InserirCampeonato(string nome, string temporada)
         {
+            using var conexao = new SqlConnection(new Banco().Conexao);
 
-            int resultadoProc = -1;
-            try
+            using var proc = new SqlCommand("InserirCampeonato", conexao) { CommandType = CommandType.StoredProcedure };
+
+            proc.Parameters.AddWithValue("@nome", nome);
+            proc.Parameters.AddWithValue("@temporada", temporada);
+            proc.Parameters.AddWithValue("@status", StatusCampeonato.Iniciado.ToString());
+
+            var retorno = new SqlParameter("resultado", SqlDbType.Int) { Direction = ParameterDirection.Output };
+            proc.Parameters.Add(retorno);
+
+            LidarComException(() =>
             {
-                using var conexao = new SqlConnection(new Banco().Conexao);
-                var retorno = new SqlParameter("resultado", SqlDbType.Int) { Direction = ParameterDirection.Output };
-
-                using var proc = new SqlCommand("InserirCampeonato", conexao)
-                {
-                    CommandType = CommandType.StoredProcedure,
-
-                    Parameters = {
-                        new SqlParameter("@nome", nome),
-                        new SqlParameter("@temporada", temporada),
-                        new SqlParameter("@status", _iniciado),
-                        retorno
-                    }
-                };
-
                 conexao.Open();
                 proc.ExecuteNonQuery();
-                resultadoProc = (int)retorno.Value;
-
                 conexao.Close();
-            }
-            catch (SqlException e)
-            {
-                Console.WriteLine($"Erro SQL: {e.Message}");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Erro: {e.Message}");
-            }
+            });
 
-            return resultadoProc;
+            return (int)retorno.Value;
         }
 
         private void SalvarDadosEquipes(List<Equipe> equipes, string nomeCamp, string tempCamp)
         {
-            try
+
+            LidarComException(() =>
             {
                 using var conexao = new SqlConnection(new Banco().Conexao);
 
@@ -361,36 +308,20 @@ namespace Futebol.Campeonato
                     proc2.Parameters.AddWithValue("@temp_camp", tempCamp);
                     proc2.Parameters.AddWithValue("@nome_equipe", equipe.Nome);
 
-                    try
+                    LidarComException(() =>
                     {
                         proc1.ExecuteNonQuery();
                         proc2.ExecuteNonQuery();
-                    }
-                    catch (SqlException ex)
-                    {
-                        Console.WriteLine($"Erro SQL: {ex.Message}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Erro: {ex.Message}");
-                    }
+                    });
                 }
-
                 conexao.Close();
-            }
-            catch (SqlException ex)
-            {
-                Console.WriteLine($"Erro SQL: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro: {ex.Message}");
-            }
+            });
         }
 
         private void SalvarJogos(List<Jogo> jogos, string nomeCamp, string tempCamp)
         {
-            try
+
+            LidarComException(() =>
             {
                 using var conexao = new SqlConnection(new Banco().Conexao);
 
@@ -402,49 +333,33 @@ namespace Futebol.Campeonato
                         CommandType = CommandType.StoredProcedure,
                         Parameters =
                         {
-                            new SqlParameter("@nome_camp", nomeCamp),
-                            new SqlParameter("@temp_camp", tempCamp),
-                            new SqlParameter("@time_casa", jogo.TimeCasa.Nome),
-                            new SqlParameter("@time_visitante", jogo.TimeVisitante.Nome),
-                            new SqlParameter("@gols_time_casa", jogo.GolsTimeCasa),
-                            new SqlParameter("@gols_time_visitante", jogo.GolsTimeVisitante)
+                        new SqlParameter("@nome_camp", nomeCamp),
+                        new SqlParameter("@temp_camp", tempCamp),
+                        new SqlParameter("@time_casa", jogo.TimeCasa.Nome),
+                        new SqlParameter("@time_visitante", jogo.TimeVisitante.Nome),
+                        new SqlParameter("@gols_time_casa", jogo.GolsTimeCasa),
+                        new SqlParameter("@gols_time_visitante", jogo.GolsTimeVisitante)
                         }
                     };
 
-                    try
+                    LidarComException(() =>
                     {
                         proc.ExecuteNonQuery();
-                    }
-                    catch (SqlException ex)
-                    {
-                        Console.WriteLine($"Erro SQL: {ex.Message}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Erro: {ex.Message}");
-                    }
+                    });
                 }
-            }
-            catch (SqlException ex)
-            {
-                Console.WriteLine($"Erro SQL: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro: {ex.Message}");
-            }
+            });
         }
 
         private void SalvarStatusCampeonato(Campeonato c)
         {
-            try
+
+            LidarComException(() =>
             {
                 using var conexao = new SqlConnection(new Banco().Conexao);
 
                 using var proc = new SqlCommand("AtualizarCampeonato", conexao)
                 {
                     CommandType = CommandType.StoredProcedure,
-
                     Parameters = {
                         new SqlParameter("@nome", c.Nome),
                         new SqlParameter("@temporada", c.Temporada),
@@ -454,15 +369,7 @@ namespace Futebol.Campeonato
 
                 conexao.Open();
                 proc.ExecuteNonQuery();
-            }
-            catch (SqlException ex)
-            {
-                Console.WriteLine($"Erro SQL: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro: {ex.Message}");
-            }
+            });
         }
 
 
@@ -472,7 +379,8 @@ namespace Futebol.Campeonato
         {
             var lista = new List<Equipe>();
 
-            try
+
+            LidarComException(() =>
             {
                 using var conexao = new SqlConnection(new Banco().Conexao);
 
@@ -480,7 +388,6 @@ namespace Futebol.Campeonato
 
                 conexao.Open();
 
-
                 using SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
@@ -493,15 +400,8 @@ namespace Futebol.Campeonato
                     lista.Add(equipe);
                 }
                 conexao.Close();
-            }
-            catch (SqlException ex)
-            {
-                Console.WriteLine($"Erro SQL: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro: {ex.Message}");
-            }
+            });
+
             return lista;
         }
 
@@ -509,7 +409,8 @@ namespace Futebol.Campeonato
         {
             var lista = new List<Equipe>();
 
-            try
+
+            LidarComException(() =>
             {
                 using var conexao = new SqlConnection(new Banco().Conexao);
                 using var cmd = new SqlCommand("RecuperarEquipesPorCampeonato", conexao)
@@ -517,10 +418,9 @@ namespace Futebol.Campeonato
                     Parameters = {
                         new SqlParameter("@nome_camp", nomeCamp),
                         new SqlParameter("@temp_camp", tempCamp)
-                    },
+                },
                     CommandType = CommandType.StoredProcedure
                 };
-
 
                 conexao.Open();
                 using SqlDataReader reader = cmd.ExecuteReader();
@@ -535,15 +435,8 @@ namespace Futebol.Campeonato
                     lista.Add(equipe);
                 }
                 conexao.Close();
-            }
-            catch (SqlException ex)
-            {
-                Console.WriteLine($"Erro SQL: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro: {ex.Message}");
-            }
+            });
+
             return lista;
         }
 
@@ -552,7 +445,8 @@ namespace Futebol.Campeonato
             var jogos = new List<Jogo>();
             var equipes = CarregarEquipesCadastradas();
 
-            try
+
+            LidarComException(() =>
             {
                 using var conexao = new SqlConnection(new Banco().Conexao);
                 using var cmd = new SqlCommand("SELECT * FROM Jogo WHERE nome_camp = @nome_camp AND temp_camp = @temp_camp ", conexao)
@@ -586,6 +480,16 @@ namespace Futebol.Campeonato
                         jogos.Add(j);
                     }
                 }
+            });
+
+            return jogos;
+        }
+
+        private void LidarComException(Action acaoExecutada)
+        {
+            try
+            {
+                acaoExecutada();
             }
             catch (SqlException ex)
             {
@@ -595,8 +499,6 @@ namespace Futebol.Campeonato
             {
                 Console.WriteLine($"Erro: {ex.Message}");
             }
-            return jogos;
         }
-
     }
 }
