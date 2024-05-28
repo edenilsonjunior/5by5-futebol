@@ -9,15 +9,17 @@ namespace Futebol.Campeonato
 
         public void Executar()
         {
-            string str = "1- Criar novo campeonato\n";
-            str += "2- Entrar em um campeonato\n";
-            str += "3- Sair";
 
             while (true)
             {
                 Console.Clear();
-                Console.WriteLine($"---|Campeonato de Futebol|---");
-                int escolha = Utils.LerInt(str);
+                Console.WriteLine($"=====|Campeonato de Futebol|=====");
+                Console.WriteLine("1- Criar novo campeonato");
+                Console.WriteLine("2- Entrar em um campeonato");
+                Console.WriteLine("0- Sair");
+                Console.WriteLine($"=================================");
+
+                int escolha = Utils.LerInt("Digite sua escolha:");
                 switch (escolha)
                 {
                     case 1:
@@ -26,7 +28,7 @@ namespace Futebol.Campeonato
                     case 2:
                         VoltarParaCampeonato();
                         break;
-                    case 3:
+                    case 0:
                         Console.Write("Saindo...");
                         Environment.Exit(0);
                         break;
@@ -42,7 +44,7 @@ namespace Futebol.Campeonato
         private void CriarCampeonato()
         {
             Console.Clear();
-            Console.WriteLine("---|Criar campeonato|---");
+            Console.WriteLine("=====|Criar campeonato|=====");
 
             string nome = Utils.LerString("Digite o nome do campeonato: ");
             string temporada = Utils.LerString("Digite a temporada do campeonato: ");
@@ -51,8 +53,10 @@ namespace Futebol.Campeonato
 
             if (insercao == 1)
             {
-                Console.WriteLine("Campeonato cadastrado!");
-                Console.WriteLine("Pressione qualquer tecla para ir até o campeonato criado...");
+                Console.WriteLine("============================");
+
+                Console.WriteLine("\n***Campeonato cadastrado!***");
+                Console.WriteLine("Pressione qualquer tecla para continuar...");
                 Console.ReadKey();
 
                 var c = new Campeonato(nome, temporada)
@@ -74,7 +78,8 @@ namespace Futebol.Campeonato
 
         private void VoltarParaCampeonato()
         {
-            Console.WriteLine($"---|Voltar para um determinado campeonato|---");
+            Console.Clear();
+            Console.WriteLine($"=====|Voltar para um determinado campeonato|=====");
 
             int total = 0;
             var listaCampeonatos = new List<Campeonato>();
@@ -136,8 +141,8 @@ namespace Futebol.Campeonato
             int total;
 
             Console.Clear();
-            Console.WriteLine("---|Inserir equipes|---");
-
+            Console.WriteLine($"=====| {nomeCamp} |=====");
+            Console.WriteLine("-->Inserir equipes:");
 
             if (lista.Count == 0)
             {
@@ -152,7 +157,7 @@ namespace Futebol.Campeonato
             else
             {
                 Console.WriteLine("Total de equipes ja cadastradas no campeonato: " + lista.Count);
-                Console.WriteLine("Faltam " + (3 - lista.Count) + "equipe(s) para atingir o minimo");
+                Console.WriteLine("Faltam " + (3 - lista.Count) + " equipe(s) para atingir o minimo");
 
                 total = Utils.LerInt("Digite o numero de equipes que voce deseja adicionar.");
 
@@ -161,13 +166,24 @@ namespace Futebol.Campeonato
                     Console.WriteLine("Resposta invalida! Digite novamente: ");
                     Console.WriteLine("Minimo 3 equipes e maximo 5");
                     total = Utils.LerInt("Digite o numero de equipes que voce deseja adicionar.");
-
                 }
+                total = lista.Count + total;
             }
-
-
+            bool inseriuEquipe = false;
+            bool primeiraVez = true;
             while (lista.Count < total)
             {
+                Console.Clear();
+                Console.WriteLine($"=====| {nomeCamp} |=====");
+                Console.WriteLine("-->Inserir equipes:\n");
+
+                if (primeiraVez == false)
+                    if (inseriuEquipe)
+                        Console.WriteLine("*** Equipe adicionada com sucesso! ***");
+                    else
+                        Console.WriteLine("*** Nao foi possivel adicionar essa equipe! ***");
+
+                primeiraVez = false;
                 Console.WriteLine("Total de equipes no campeonato: " + lista.Count);
                 Console.WriteLine("Opcoes:");
                 int op = Utils.LerInt("1- Inserir uma nova equipe\n2- Inserir uma equipe ja cadastrada");
@@ -179,8 +195,10 @@ namespace Futebol.Campeonato
                     if (e1 != null)
                     {
                         lista.Add(e1);
-                        Console.WriteLine("*** Equipe adicionada com sucesso! ***");
+                        inseriuEquipe = true;
                     }
+                    else
+                        inseriuEquipe = false;
                 }
                 else if (op == 2)
                 {
@@ -189,13 +207,21 @@ namespace Futebol.Campeonato
                     if (e2 != null)
                     {
                         lista.Add(e2);
-                        Console.WriteLine("*** Equipe adicionada com sucesso! ***");
+                        Console.WriteLine();
+                        inseriuEquipe = true;
                     }
+                    else
+                        inseriuEquipe = false;
                 }
                 else
                     Console.WriteLine("Resposta invalida!");
             }
 
+            Console.Clear();
+            Console.WriteLine($"=====| {nomeCamp} |=====");
+            Console.WriteLine("\n***Equipes cadastradas com sucesso!***");
+            Console.WriteLine("Pressione qualquer tecla para continuar...");
+            Console.ReadLine();
             return lista;
         }
 
@@ -221,7 +247,7 @@ namespace Futebol.Campeonato
         {
 
             Console.Clear();
-            Console.WriteLine("--|Inserir uma equipe ja cadastrada no campeonato|--");
+            Console.WriteLine("=====Inserir uma equipe ja cadastrada no campeonato=====");
 
             if (equipesJaCadastradas.Count == 0)
             {
@@ -318,7 +344,7 @@ namespace Futebol.Campeonato
             });
         }
 
-        private void SalvarJogos(List<Jogo> jogos, string nomeCamp, string tempCamp)
+        public static void SalvarJogos(List<Jogo> jogos, string nomeCamp, string tempCamp)
         {
 
             LidarComException(() =>
@@ -485,7 +511,7 @@ namespace Futebol.Campeonato
             return jogos;
         }
 
-        private void LidarComException(Action acaoExecutada)
+        private static void LidarComException(Action acaoExecutada)
         {
             try
             {

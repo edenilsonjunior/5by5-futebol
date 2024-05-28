@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+using Microsoft.Identity.Client;
 
 namespace Futebol.Campeonato
 {
@@ -80,7 +81,7 @@ namespace Futebol.Campeonato
             while (!sair)
             {
                 Console.Clear();
-                Console.WriteLine($"--| {Nome} |--");
+                Console.WriteLine($"=====|{Nome}|=====");
                 int opcao = Utils.LerInt(str);
 
                 switch (opcao)
@@ -281,6 +282,10 @@ namespace Futebol.Campeonato
 
         private void ExibirPlacar()
         {
+            ControladorCampeonato.SalvarJogos(Jogos, Nome, Temporada);
+
+            Console.WriteLine("--|Placar do campeonato|-- \n");
+            bool existePlacar = false;
             try
             {
                 using var conexao = new SqlConnection(new Banco().Conexao);
@@ -299,33 +304,24 @@ namespace Futebol.Campeonato
                 conexao.Open();
 
                 using SqlDataReader reader = cmd.ExecuteReader();
-                if (reader.HasRows)
+
+                int posicao = 1;
+
+
+                while (reader.Read())
                 {
-                    int posicao = 1;
-                    Console.WriteLine("--|Placar do campeonato|-- \n");
+                    // Só exibe o campeao caso o campeonato ja esteja finalizado
+                    if (posicao == 1 && _status == StatusCampeonato.Finalizado)
+                        Console.WriteLine("=====|CAMPEAO|=====");
 
-                    if (reader.HasRows)
-                    {
-
-                        while (reader.Read())
-                        {
-                            // Só exibe o campeao caso o campeonato ja esteja finalizado
-                            if (posicao == 1 && _status == StatusCampeonato.Finalizado)
-                                Console.WriteLine("=====CAMPEAO=====");
-
-                            Console.WriteLine($"Equipe...........: " + reader.GetString(2));
-                            Console.WriteLine($"Posicao no placar: {posicao++}");
-                            Console.WriteLine($"Pontos...........: " + reader.GetInt32(3));
-                            Console.WriteLine($"Gols marcados....: " + reader.GetInt32(4));
-                            Console.WriteLine($"Gols sofridos....: " + reader.GetInt32(5));
-                            Console.WriteLine("===================");
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("Nao existem pontuacoes ainda atreladas a esse campeonato!");
-                    }
+                    Console.WriteLine($"Equipe...........: " + reader.GetString(2));
+                    Console.WriteLine($"Posicao no placar: {posicao++}");
+                    Console.WriteLine($"Pontos...........: " + reader.GetInt32(3));
+                    Console.WriteLine($"Gols marcados....: " + reader.GetInt32(4));
+                    Console.WriteLine($"Gols sofridos....: " + reader.GetInt32(5));
+                    Console.WriteLine("===================");
                 }
+
             }
             catch (SqlException ex)
             {
@@ -335,12 +331,16 @@ namespace Futebol.Campeonato
             {
                 Console.WriteLine($"Erro: {ex.Message}");
             }
+
+            if (!existePlacar)
+                Console.WriteLine("Nao existem pontuacoes ainda atreladas a esse campeonato!");
+
         }
 
         private void ExibirJogos()
         {
             Console.Clear();
-            Console.WriteLine("=====Listar todos os jogos=====");
+            Console.WriteLine("=====|Listar todos os jogos|=====");
 
 
             if (_jogos.Count == 0)
@@ -350,7 +350,7 @@ namespace Futebol.Campeonato
             }
 
             int indice = 0;
-            int opcao = -1;
+            int opcao;
 
             do
             {
@@ -426,7 +426,7 @@ namespace Futebol.Campeonato
 
         public void ExibirEquipes()
         {
-            Console.WriteLine("--|Equipes participantes do campeonato|--");
+            Console.WriteLine("=====|Equipes participantes do campeonato|=====");
 
             if (_equipesParticipantes.Count == 0)
             {

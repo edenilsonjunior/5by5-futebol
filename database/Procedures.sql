@@ -93,17 +93,17 @@ CREATE OR ALTER PROC InserirJogo
             SET @pontos_time_casa = 1;
         END;
 
-        -- Inserindo as estatisticas do time da casa        
-        EXEC AtualizarEstatistica @nome_camp, @temp_camp, @time_casa, @pontos_time_casa, @gols_time_casa, @gols_time_visitante;
-
-        -- Inserindo as estatisticas do time visitante        
-        EXEC AtualizarEstatistica @nome_camp, @temp_camp, @time_visitante, @pontos_time_visitante, @gols_time_visitante, @gols_time_casa;
-
-        -- Inserindo o jogo atual em sua respectiva tabela
         IF NOT EXISTS (SELECT * FROM Jogo WHERE nome_camp = @nome_camp AND temp_camp = @temp_camp AND time_casa = @time_casa AND time_visitante = @time_visitante)
         BEGIN
+            -- Inserindo o jogo atual em sua respectiva tabela
             INSERT INTO Jogo
             VALUES (@nome_camp, @temp_camp, @time_casa, @time_visitante, @gols_time_casa, @gols_time_visitante);
+        
+            -- Inserindo as estatisticas do time da casa        
+            EXEC AtualizarEstatistica @nome_camp, @temp_camp, @time_casa, @pontos_time_casa, @gols_time_casa, @gols_time_visitante;
+
+            -- Inserindo as estatisticas do time visitante        
+            EXEC AtualizarEstatistica @nome_camp, @temp_camp, @time_visitante, @pontos_time_visitante, @gols_time_visitante, @gols_time_casa;
         END;
 END;
 
